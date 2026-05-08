@@ -1,16 +1,19 @@
 {
   "name": "tut-auth",
   "version": "1.0.0",
-  "main": "index.js",
+  "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "dev": "tsx watch 01-basic-auth/server.ts"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/dreiv/tut-auth.git"
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+    "@types/node": "^25.6.2",
+    "tsx": "^4.21.0",
+    "typescript": "^6.0.3"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "commonjs"
+  "dependencies": {
+    "express": "^5.2.1"
+  }
 }
