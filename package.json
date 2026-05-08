@@ -3,9 +3,7 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "build": "tsc",
-    "start": "node dist/server.js",
-    "dev": "tsx watch 01-basic-auth/server.ts"
+    "dev:1": "tsx watch 01-basic-auth/server.ts"
   },
   "devDependencies": {
     "@types/express": "^5.0.6",
