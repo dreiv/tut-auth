@@ -3,12 +3,12 @@
     "target": "ES2022",
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
-    "rootDir": "./01-basic-auth",
+    "rootDir": "./",
     "outDir": "./dist",
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true
   },
-  "include": ["01-basic-auth/**/*"],
+  "include": ["01-basic-auth/**/*", "02-bearer-opaque/**/*"],
   "exclude": ["node_modules", "dist"]
 }

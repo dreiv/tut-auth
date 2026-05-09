@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bearer Token Demo Client</title>
+  <style>
+    @layer base {
+      :root {
+        --bg: #fafaf9;
+        --text: #44403c;
+        --text-h: #1c1917;
+        --border: #eaddd7;
+        --code-bg: #f5f5f4;
+
+        --accent: #f47121;
+        --accent-bg: rgba(244, 113, 33, 0.05);
+        --accent-border: rgba(244, 113, 33, 0.25);
+
+        --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.04);
+        --sans: 'Inter', system-ui, -apple-system, sans-serif;
+        --mono: ui-monospace, 'Cascadia Code', 'Source Code Pro', monospace;
+
+        --normal: 200ms;
+        --fast: 150ms;
+        --slow: 300ms;
+
+        color-scheme: light dark;
+        font-family: var(--sans);
+        font-size: 18px;
+        line-height: 1.6;
+        color: var(--text);
+        background-color: var(--bg);
+        -webkit-font-smoothing: antialiased;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #1c1917;
+          --text: #a8a29e;
+          --text-h: #fafaf9;
+          --border: #44403c;
+          --code-bg: #292524;
+          --accent: #fb923c;
+          --accent-bg: rgba(251, 146, 60, 0.1);
+          --accent-border: rgba(251, 146, 60, 0.3);
+        }
+      }
+    }
+
+    body {
+      margin: 0;
+      padding: 60px 20px;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: var(--bg);
+      padding: 40px;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+
+      h1 {
+        color: var(--text-h);
+        margin: 0 0 12px;
+        font-size: 36px;
+        font-weight: 700;
+        letter-spacing: -0.025em;
+      }
+
+      .subtitle {
+        color: var(--text);
+        margin-bottom: 48px;
+        font-size: 18px;
+        opacity: 0.9;
+      }
+    }
+
+    .section {
+      margin-bottom: 32px;
+      padding: 28px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      text-align: left;
+      background: var(--accent-bg);
+      transition: border-color var(--normal);
+
+      h2 {
+        margin: 0 0 20px;
+        color: var(--text-h);
+        font-size: 13px;
+        text-transform: uppercase;
+        font-family: var(--mono);
+        letter-spacing: 0.1em;
+        font-weight: 700;
+      }
+
+      &:focus-within {
+        border-color: var(--accent);
+      }
+    }
+
+    input {
+      width: 100%;
+      padding: 12px 16px;
+      margin-bottom: 16px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--bg);
+      color: var(--text-h);
+      font-size: 15px;
+      font-family: var(--sans);
+      box-sizing: border-box;
+      transition: all var(--fast);
+
+      &:focus {
+        outline: none;
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px var(--accent-bg);
+      }
+    }
+
+    button {
+      font-family: var(--sans);
+      font-weight: 600;
+      background: var(--accent);
+      color: #fff;
+      border: 1px solid transparent;
+      padding: 12px 24px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 15px;
+      transition: all var(--fast);
+
+      &:hover {
+        filter: brightness(1.1);
+        box-shadow: 0 4px 12px rgba(244, 113, 33, 0.2);
+      }
+
+      &:active {
+        transform: translateY(1px);
+      }
+
+      &.danger {
+        background: #ef4444;
+      }
+
+      &.secondary {
+        background: var(--code-bg);
+        color: var(--text-h);
+        border-color: var(--border);
+
+        &:hover {
+          background: var(--border);
+        }
+      }
+    }
+
+    .token-display,
+    .response {
+      font-family: var(--mono);
+      font-size: 14px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      line-height: 1.5;
+    }
+
+    .token-display {
+      background: var(--code-bg);
+      padding: 16px;
+      margin: 16px 0;
+      word-break: break-all;
+      color: var(--accent);
+      font-weight: 500;
+    }
+
+    .response {
+      background: var(--bg);
+      padding: 20px;
+      margin-top: 20px;
+      white-space: pre-wrap;
+      max-height: 300px;
+      overflow-y: auto;
+      color: var(--text);
+
+      &.success {
+        border-left: 4px solid var(--accent);
+      }
+
+      &.error {
+        border-left: 4px solid #ef4444;
+        background: rgba(239, 68, 68, 0.02);
+      }
+    }
+
+    .info {
+      color: var(--text);
+      font-size: 14px;
+      margin-top: 16px;
+      opacity: 0.8;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+
+      &::before {
+        content: "→";
+        color: var(--accent);
+        font-weight: bold;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <h1>Bearer Token Demo</h1>
+    <p class="subtitle">Test opaque token authentication with instant revocation</p>
+
+    <!-- 1. Login -->
+    <div class="section">
+      <h2>1. Login (Get Token)</h2>
+      <input type="text" id="username" placeholder="Username" value="admin">
+      <input type="password" id="password" placeholder="Password" value="secret123">
+      <button onclick="login()">Sign In</button>
+      <div class="info">Default credentials: admin / secret123</div>
+      <div id="loginResponse"></div>
+    </div>
+
+    <!-- Token Display -->
+    <div class="section">
+      <h2>Current Active Token</h2>
+      <div class="token-display" id="tokenDisplay">Waiting for login...</div>
+      <button class="secondary" onclick="copyToken()">Copy to Clipboard</button>
+    </div>
+
+    <!-- 2. Protected Resource -->
+    <div class="section">
+      <h2>2. Protected Data</h2>
+      <button onclick="getTasks()">Fetch Tasks</button>
+      <button class="secondary" onclick="getTasksMultiple()">Burst Test (3x)</button>
+      <div class="info">Check server console for database lookup logs</div>
+      <div id="tasksResponse"></div>
+    </div>
+
+    <!-- 3. Logout -->
+    <div class="section">
+      <h2>3. Revocation</h2>
+      <button class="danger" onclick="logout()">Revoke Session</button>
+      <div class="info">This destroys the token on the server instantly.</div>
+      <div id="logoutResponse"></div>
+    </div>
+
+    <!-- 4. Test Revocation -->
+    <div class="section">
+      <h2>4. Verification</h2>
+      <button class="secondary" onclick="testRevocation()">Verify Revoked Token</button>
+      <div id="revocationResponse"></div>
+    </div>
+  </div>
+
+  <script>
+    let currentToken = null;
+
+    function showResponse(elementId, data, isError = false) {
+      const element = document.getElementById(elementId);
+      element.className = 'response ' + (isError ? 'error' : 'success');
+      element.textContent = JSON.stringify(data, null, 2);
+    }
+
+    async function login() {
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+
+      try {
+        const response = await fetch('http://localhost:3002/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password })
+        });
+        const data = await response.json();
+
+        if (response.ok) {
+          currentToken = data.access_token;
+          document.getElementById('tokenDisplay').textContent = currentToken;
+          showResponse('loginResponse', data);
+        } else {
+          showResponse('loginResponse', data, true);
+        }
+      } catch (error) {
+        showResponse('loginResponse', { error: error.message }, true);
+      }
+    }
+
+    async function getTasks() {
+      if (!currentToken) return alert('No active session.');
+      try {
+        const response = await fetch('http://localhost:3002/tasks', {
+          headers: { 'Authorization': `Bearer ${currentToken}` }
+        });
+        const data = await response.json();
+        showResponse('tasksResponse', data, !response.ok);
+      } catch (error) {
+        showResponse('tasksResponse', { error: error.message }, true);
+      }
+    }
+
+    async function getTasksMultiple() {
+      if (!currentToken) return alert('No active session.');
+      showResponse('tasksResponse', { message: 'Rapid-fire requests initiated...' });
+      for (let i = 0; i < 3; i++) {
+        await getTasks();
+        await new Promise(r => setTimeout(r, 150));
+      }
+    }
+
+    async function logout() {
+      if (!currentToken) return alert('No active session.');
+      try {
+        const response = await fetch('http://localhost:3002/logout', {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${currentToken}` }
+        });
+        const data = await response.json();
+        showResponse('logoutResponse', data, !response.ok);
+      } catch (error) {
+        showResponse('logoutResponse', { error: error.message }, true);
+      }
+    }
+
+    async function testRevocation() {
+      if (!currentToken) return alert('Requires a previously active token.');
+      try {
+        const response = await fetch('http://localhost:3002/tasks', {
+          headers: { 'Authorization': `Bearer ${currentToken}` }
+        });
+        const data = await response.json();
+        showResponse('revocationResponse', {
+          status: response.status,
+          success: response.ok,
+          message: response.ok ? 'Token is unexpectedly active.' : 'Token successfully rejected.',
+          body: data
+        }, !response.ok);
+      } catch (error) {
+        showResponse('revocationResponse', { error: error.message }, true);
+      }
+    }
+
+    function copyToken() {
+      if (!currentToken) return alert('Nothing to copy.');
+      navigator.clipboard.writeText(currentToken);
+      alert('Token copied!');
+    }
+  </script>
+</body>
+
+</html>
