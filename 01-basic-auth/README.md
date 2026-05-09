@@ -30,15 +30,14 @@ HTTP Basic Authentication sends credentials (`username:password`) encoded in **B
 
 ## Testing
 
-### Command Line
+"### Command Line
 
 ```bash
-# Start server
-node server.js
+# Start server and client (from root)
+npm run dev:1
 
 # Test protected endpoint
 curl -u admin:secret123 http://localhost:3001/tasks
-
 ```
 
 **Credentials:** `admin` / `secret123`
@@ -47,4 +46,4 @@ curl -u admin:secret123 http://localhost:3001/tasks
 
 Visit `http://localhost:3001/tasks`. The browser will natively prompt for credentials.
 
-**Note on Logout:** To clear stored credentials during testing, you must close the browser tab or use an Incognito window. Clear Site Data in DevTools will not work.
+**Note on Logout:** To clear stored credentials during testing, you must close the browser tab or use an Incognito window. Clear Site Data in DevTools will not work."

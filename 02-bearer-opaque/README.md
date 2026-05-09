@@ -8,7 +8,7 @@ Unlike Basic Auth, where you send your password every time, Bearer Authenticatio
 
 ## The "Scaling" Advantage
 
-As shown in image_b98fa5.jpg, moving from passwords to tokens provides **way more control**:
+Moving from passwords to tokens provides **way more control**:
 
 | Feature        | Basic Auth (Passwords)               | Bearer Tokens                           |
 | -------------- | ------------------------------------ | --------------------------------------- |
@@ -46,7 +46,7 @@ As shown in image_b98fa5.jpg, moving from passwords to tokens provides **way mor
 
 ### Interactive Demo (Recommended)
 
-1. Start the server: `node server.js`
+1. Start the server and client (from root): `npm run dev:2`
 2. Open `client.html` in your browser.
 3. **The Workflow:** Login $\rightarrow$ Access Tasks $\rightarrow$ Logout $\rightarrow$ Try to access Tasks again. Notice that unlike Basic Auth, the logout actually works!
 
