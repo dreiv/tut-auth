@@ -10,25 +10,39 @@ const demoTasks = [
   { id: 2, title: "My second task", completed: false },
 ];
 
-const basicAuth = (req: Request, res: Response, next: NextFunction) => {
-  const [type, credentials] = (req.headers.authorization || "").split(" ");
-  const [user, pass] = Buffer.from(credentials || "", "base64")
-    .toString()
-    .split(":");
+/**
+ * Decodes the Basic Auth header into a [username, password] tuple.
+ */
+function parseBasicAuth(header: string): [string, string] {
+  const base64Credentials = header.split(" ")[1] || "";
+  const decoded = Buffer.from(base64Credentials, "base64").toString("utf-8");
+  const [username, password] = decoded.split(":");
+  return [username || "", password || ""];
+}
 
-  if (type === "Basic" && user === "admin" && pass === "secret123") {
-    console.log(`[auth]: ${user} logged in`);
+/**
+ * Middleware: Basic Authentication
+ */
+function authenticate(req: Request, res: Response, next: NextFunction) {
+  const authHeader = req.headers.authorization;
+
+  if (!authHeader?.startsWith("Basic ")) {
+    res.setHeader("WWW-Authenticate", 'Basic realm="Node Tutorial"');
+    return res.status(401).json({ error: "Authentication required" });
+  }
+
+  const [username, password] = parseBasicAuth(authHeader);
+
+  if (username === "admin" && password === "secret123") {
+    console.log(`[auth]: ${username} accessed the resource`);
     return next();
   }
 
-  res.setHeader("WWW-Authenticate", 'Basic realm="Node Tutorial"');
-  res.status(401).json({ error: "Access denied. Use Basic Auth." });
-};
+  res.status(401).json({ error: "Invalid username or password" });
+}
 
-app.get("/", (_, res) =>
-  res.send({ message: "Basic Auth Server is running!" }),
-);
-app.get("/tasks", basicAuth, (_, res) => res.json(demoTasks));
+app.get("/", (_, res) => res.send("Server running, Go to /tasks!"));
+app.get("/tasks", authenticate, (_, res) => res.json(demoTasks));
 app.listen(PORT, () =>
   console.log(`🚀 Basic Auth Server: http://localhost:${PORT}`),
 );
