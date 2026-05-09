@@ -62,7 +62,7 @@ function bearerAuth(req: AuthRequest, res: Response, next: NextFunction) {
 
 // --- Routes ---
 
-app.get("/", (_, res) => res.send("Server running, Go to /tasks!"));
+app.get("/", (_, res) => res.send("Server running!"));
 
 app.post("/login", (req: Request, res: Response) => {
   const { username, password } = req.body;
@@ -91,7 +91,7 @@ app.post("/login", (req: Request, res: Response) => {
   res.status(401).json({ error: "Invalid credentials" });
 });
 
-app.get("/tasks", bearerAuth, (req: AuthRequest, res: Response) => {
+app.get("/tasks", bearerAuth, (_, res: Response) => {
   res.json(demoTasks);
 });
 

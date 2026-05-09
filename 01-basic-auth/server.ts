@@ -54,7 +54,7 @@ function authenticate(req: AuthRequest, res: Response, next: NextFunction) {
 
 // --- Routes ---
 
-app.get("/", (_, res) => res.send("Server running, Go to /tasks!"));
+app.get("/", (_, res) => res.send("Server running!"));
 
 app.get("/tasks", authenticate, (req: AuthRequest, res: Response) => {
   console.log(`[data]: Sending tasks to ${req.user?.username}`);
