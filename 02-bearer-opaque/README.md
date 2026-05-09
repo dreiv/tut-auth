@@ -54,16 +54,16 @@ Moving from passwords to tokens provides **way more control**:
 
 ```bash
 # 1. Login to get your token
-curl -X POST http://localhost:3002/login \
+curl -X POST http://localhost:3001/login \
   -H "Content-Type: application/json" \
   -d '{"username":"admin","password":"secret123"}'
 
 # 2. Use that token for protected data
-curl http://localhost:3002/tasks \
+curl http://localhost:3001/tasks \
   -H "Authorization: Bearer <your-token-here>"
 
 # 3. Revoke the token (Logout)
-curl -X POST http://localhost:3002/logout \
+curl -X POST http://localhost:3001/logout \
   -H "Authorization: Bearer <your-token-here>"
 
 ```

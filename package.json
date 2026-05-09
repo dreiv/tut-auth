@@ -4,28 +4,35 @@
   "type": "module",
   "scripts": {
     "dev:1": "concurrently \"npm run dev:1:server\" \"npm run dev:1:client\"",
-    "dev:1:server": "tsx watch 01-basic-auth/server.ts",
-    "dev:1:client": "live-server 01-basic-auth --port=3001 --entry-file=client.html",
     "dev:2": "concurrently \"npm run dev:2:server\" \"npm run dev:2:client\"",
-    "dev:2:server": "tsx watch 02-bearer-opaque/server.ts",
-    "dev:2:client": "live-server 02-bearer-opaque --port=3002 --entry-file=client.html",
     "dev:3": "concurrently \"npm run dev:3:server\" \"npm run dev:3:client\"",
+    "dev:4": "concurrently \"npm run dev:4:server\" \"npm run dev:4:client:vulnerable\" \"npm run dev:4:client:secure\" \"npm run dev:4:malicious\"",
+    "dev:1:server": "tsx watch 01-basic-auth/server.ts",
+    "dev:1:client": "live-server 01-basic-auth --port=3000 --entry-file=client.html",
+    "dev:2:server": "tsx watch 02-bearer-opaque/server.ts",
+    "dev:2:client": "live-server 02-bearer-opaque --port=3001 --entry-file=client.html",
     "dev:3:server": "tsx watch 03-jwt/server.ts",
-    "dev:3:client": "live-server 03-jwt --port=3003 --entry-file=client.html"
+    "dev:3:client": "live-server 03-jwt --port=3002 --entry-file=client.html",
+    "dev:4:server": "tsx watch 04-security/secure-server.ts",
+    "dev:4:malicious": "tsx watch 04-security/malicious-server.ts",
+    "dev:4:client:vulnerable": "live-server 04-security --port=3003 --entry-file=vulnerable-client.html",
+    "dev:4:client:secure": "live-server 04-security --port=3004 --entry-file=secure-client.html"
   },
   "devDependencies": {
+    "@types/cookie-parser": "^1.4.10",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^25.6.2",
     "concurrently": "^9.2.1",
-    "jsonwebtoken": "^9.0.3",
     "live-server": "^1.2.2",
     "tsx": "^4.21.0",
     "typescript": "^6.0.3"
   },
   "dependencies": {
+    "cookie-parser": "^1.4.7",
     "cors": "^2.8.6",
-    "express": "^5.2.1"
+    "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.3"
   }
 }

@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Secure Client - httpOnly</title>
+  <style>
+    :root {
+      --stone-900: #1c1917;
+      --stone-800: #292524;
+      --stone-700: #44403c;
+      --stone-200: #e7e5e4;
+      --emerald-500: #10b981;
+      --emerald-600: #059669;
+    }
+
+    /* ... (Base styles same as above) ... */
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--stone-900);
+      color: var(--stone-200);
+      padding: 40px;
+    }
+
+    .container {
+      max-width: 650px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      color: var(--emerald-500);
+      border-bottom: 2px solid var(--stone-800);
+      padding-bottom: 10px;
+    }
+
+    .section {
+      background: var(--stone-800);
+      padding: 25px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+      border: 1px solid var(--stone-700);
+    }
+
+    .secure-badge {
+      background: #064e3b;
+      color: #34d399;
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      font-weight: bold;
+      text-align: center;
+      border: 1px solid #065f46;
+    }
+
+    button {
+      background: var(--emerald-500);
+      color: var(--stone-900);
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    pre {
+      background: var(--stone-900);
+      padding: 15px;
+      border-radius: 8px;
+      color: var(--emerald-500);
+      border: 1px solid var(--stone-700);
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <div class="secure-badge">🛡️ httpOnly COOKIES ACTIVE</div>
+    <h1>Security: httpOnly</h1>
+
+    <div class="section">
+      <h2>1. Login</h2>
+      <button onclick="login()">Login (Set Cookie)</button>
+      <pre id="loginResult">No session active</pre>
+    </div>
+
+    <div class="section">
+      <h2>2. Verify XSS Defense</h2>
+      <p>Try to read the token via JavaScript <code>document.cookie</code>.</p>
+      <button onclick="attemptTheft()">Attempt JavaScript Theft</button>
+      <pre id="xssResult"></pre>
+    </div>
+  </div>
+
+  <script>
+    async function login() {
+      await fetch('http://localhost:3004/login', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: 'admin', password: 'secret123' })
+      });
+      document.getElementById('loginResult').textContent = "Logged in! Check DevTools -> Cookies.";
+    }
+
+    function attemptTheft() {
+      const cookie = document.cookie;
+      document.getElementById('xssResult').textContent =
+        cookie.includes('auth_token') ? "FAILED: Token stolen!" : "SUCCESS: JavaScript cannot see the auth_token!";
+    }
+  </script>
+</body>
+
+</html>

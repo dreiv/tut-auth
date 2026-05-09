@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Vulnerable Client - localStorage</title>
+  <style>
+    :root {
+      --stone-900: #1c1917;
+      --stone-800: #292524;
+      --stone-700: #44403c;
+      --stone-200: #e7e5e4;
+      --amber-500: #f59e0b;
+      --amber-600: #d97706;
+      --red-500: #ef4444;
+    }
+
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--stone-900);
+      color: var(--stone-200);
+      line-height: 1.6;
+      margin: 0;
+      padding: 40px;
+    }
+
+    .container {
+      max-width: 650px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      color: var(--amber-500);
+      border-bottom: 2px solid var(--stone-800);
+      padding-bottom: 10px;
+    }
+
+    .section {
+      background: var(--stone-800);
+      padding: 25px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+      border: 1px solid var(--stone-700);
+    }
+
+    .danger-zone {
+      border-color: var(--red-500);
+      background: #2d1a1a;
+    }
+
+    button {
+      background: var(--amber-500);
+      color: var(--stone-900);
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    button:hover {
+      background: var(--amber-600);
+      transform: translateY(-1px);
+    }
+
+    button.danger {
+      background: var(--red-500);
+      color: white;
+    }
+
+    pre {
+      background: var(--stone-900);
+      padding: 15px;
+      border-radius: 8px;
+      color: var(--amber-500);
+      font-size: 0.9rem;
+      overflow-x: auto;
+      border: 1px solid var(--stone-700);
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 99px;
+      font-size: 0.8rem;
+      font-weight: bold;
+      margin-bottom: 10px;
+      background: #451a03;
+      color: #fbbf24;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <div class="badge">VULNERABLE DEMO</div>
+    <h1>Security: LocalStorage</h1>
+    <p>Demonstrating <strong>XSS Token Theft</strong>.</p>
+
+    <div class="section">
+      <h2>1. Authenticate</h2>
+      <button onclick="login()">Login & Store Token</button>
+      <pre id="loginResult">Waiting for login...</pre>
+    </div>
+
+    <div class="section danger-zone">
+      <h2>2. XSS Attack Simulation</h2>
+      <p>Any script on this page can access <code>localStorage</code>.</p>
+      <button class="danger" onclick="executeXSS()">Run Malicious Script</button>
+    </div>
+  </div>
+
+  <script>
+    async function login() {
+      const res = await fetch('http://localhost:3004/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: 'admin', password: 'secret123' })
+      });
+      const data = await res.json();
+      localStorage.setItem('token', data.access_token);
+      document.getElementById('loginResult').textContent = "Token stored in LocalStorage!";
+    }
+
+    function executeXSS() {
+      const token = localStorage.getItem('token');
+      if (!token) return alert("Login first!");
+      alert("HACKED! Script read your token:\n\n" + token.substring(0, 50) + "...");
+    }
+  </script>
+</body>
+
+</html>

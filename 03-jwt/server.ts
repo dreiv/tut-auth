@@ -11,7 +11,7 @@ interface AuthRequest extends Request {
 }
 
 const app = express();
-const PORT = process.env.PORT || 3003;
+const PORT = process.env.PORT || 3002;
 const JWT_SECRET = "your-secret-key-change-in-production";
 
 app.use(cors()).use(express.json());
@@ -65,18 +65,10 @@ app.post("/login", (req: Request, res: Response) => {
 
   if (username === "admin" && password === "secret123") {
     // We embed the data directly into the token
-    const token = jwt.sign(
-      {
-        sub: "1",
-        username: username,
-        role: "admin",
-      },
-      JWT_SECRET,
-      {
-        algorithm: "HS256",
-        expiresIn: "1h",
-      },
-    );
+    const token = jwt.sign({ sub: "1", username, role: "admin" }, JWT_SECRET, {
+      algorithm: "HS256",
+      expiresIn: "1h",
+    });
 
     console.log("[auth]: JWT generated. Server will not store this token.");
 
