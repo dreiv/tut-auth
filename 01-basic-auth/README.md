@@ -2,28 +2,31 @@
 
 ## What is Basic Auth?
 
-HTTP Basic Authentication sends credentials (username:password) encoded in Base64 with every request in the `Authorization` header.
+HTTP Basic Authentication sends credentials (`username:password`) encoded in **Base64** with every request in the `Authorization` header.
 
-## How It Works
+> **⚠️ Critical Warning:** Base64 is **NOT** encryption. It is like writing your password in a different font—anyone who intercepts the header can decode it instantly.
 
-1. Client sends credentials: `Authorization: Basic base64(username:password)`
-2. Server decodes the Base64 string
-3. Server validates credentials on every request
+---
 
 ## Key Characteristics
 
-**Pros:**
+| Pros                                                            | Cons & Risks                                                                              |
+| --------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| **Simple:** Easy to implement and built into the HTTP standard. | **Insecure over HTTP:** Credentials are sent in plain sight; must use HTTPS.              |
+| **Stateless:** No session storage or database needed.           | **Every Single Request:** Credentials are sent, logged, and cached constantly.            |
+| **Native:** Supported by all browsers and CLI tools.            | **No Revocation:** You can't "log out" or expire a session without changing the password. |
 
-- Simple to implement
-- Built into HTTP standard
-- No session storage needed
+---
 
-**Cons:**
+## When to Use
 
-- Credentials sent with every request
-- Must use HTTPS (credentials easily decoded from Base64)
-- No logout mechanism
-- No expiration
+| ✅ Perfect For                  | ❌ Never Use For            |
+| ------------------------------- | --------------------------- |
+| Internal tools behind a VPN     | Production web apps         |
+| Rapid dev environments          | Public user-facing services |
+| Simple IoT device communication | Mobile applications         |
+
+---
 
 ## Testing
 
@@ -34,11 +37,14 @@ HTTP Basic Authentication sends credentials (username:password) encoded in Base6
 node server.js
 
 # Test protected endpoint
-curl -u admin:secret123 http://localhost:3001/tasks
+curl -u admin:secret123 http://localhost:3000/tasks
+
 ```
 
 **Credentials:** `admin` / `secret123`
 
 ### Browser Testing
 
-Basic Auth works natively in browsers - just visit `http://localhost:3001/tasks` and the browser will prompt for credentials.
+Visit `http://localhost:3000/tasks`. The browser will natively prompt for credentials.
+
+**Note on Logout:** To clear stored credentials during testing, you must close the browser tab or use an Incognito window. Clear Site Data in DevTools will not work.

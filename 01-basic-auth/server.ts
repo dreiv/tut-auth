@@ -17,6 +17,7 @@ function parseBasicAuth(header: string): [string, string] {
   const base64Credentials = header.split(" ")[1] || "";
   const decoded = Buffer.from(base64Credentials, "base64").toString("utf-8");
   const [username, password] = decoded.split(":");
+
   return [username || "", password || ""];
 }
 
