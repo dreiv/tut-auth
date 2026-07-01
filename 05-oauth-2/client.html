@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>OAuth 2.0 Revelatory Client</title>
+    <style>
+      body {
+        font-family: system-ui, sans-serif;
+        margin: 30px;
+        background: #fafafa;
+        color: #333;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+      }
+      .card {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        border: 1px solid #e3e3e3;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+      }
+      h2,
+      h3 {
+        margin-top: 0;
+        color: #111;
+      }
+      input {
+        width: 90%;
+        padding: 10px;
+        margin-bottom: 15px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+      }
+      button {
+        background: #f47121;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 4px;
+        font-weight: bold;
+        cursor: pointer;
+      }
+      button:hover {
+        opacity: 0.9;
+      }
+      pre {
+        background: #1e1e1e;
+        color: #39da8a;
+        padding: 15px;
+        border-radius: 6px;
+        overflow-x: auto;
+        font-family: monospace;
+        font-size: 13px;
+      }
+      .badge {
+        background: #fee2e2;
+        color: #991b1b;
+        padding: 3px 8px;
+        border-radius: 12px;
+        font-size: 11px;
+        font-weight: bold;
+        text-transform: uppercase;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>
+      OAuth 2.0 Provider Lab <span class="badge">Step 1: Authorization</span>
+    </h1>
+    <p>
+      The Third-Party Client app wants access to your profile and tasks. You
+      must log into the Identity Provider to authorize it.
+    </p>
+
+    <div class="grid">
+      <div class="card">
+        <h2>1. Identity Provider Portal</h2>
+        <p style="font-size: 14px; color: #666">
+          This mock form handles authentication directly against your Express
+          server.
+        </p>
+
+        <label>Username</label><br />
+        <input type="text" id="username" value="admin" /><br />
+
+        <label>Password</label><br />
+        <input type="password" id="password" value="secret123" /><br />
+
+        <button onclick="startAuthFlow()">Approve & Authorize App</button>
+      </div>
+
+      <div class="card" style="background: #f8fafc">
+        <h3>Scope & Query Parameters Sent</h3>
+        <p>
+          Before you click sign-in, the client app passes these parameters to
+          identify itself:
+        </p>
+        <pre id="req-preview">Loading parameters...</pre>
+      </div>
+    </div>
+
+    <script>
+      const authParams = {
+        response_type: "code",
+        client_id: "vanguard-app-123",
+        redirect_uri: "http://localhost:3005/callback.html", // Updated to port 3005
+        state: "secure_random_state_xyz",
+        scope: "profile tasks",
+      };
+
+      document.getElementById("req-preview").textContent = JSON.stringify(
+        authParams,
+        null,
+        2,
+      );
+
+      async function startAuthFlow() {
+        const username = document.getElementById("username").value;
+        const password = document.getElementById("password").value;
+        const params = new URLSearchParams(authParams);
+
+        const response = await fetch(
+          `http://localhost:3005/oauth/authorize?${params.toString()}`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ username, password }),
+          },
+        );
+
+        const data = await response.json();
+
+        if (data.redirectUri) {
+          window.location.assign(data.redirectUri);
+        } else {
+          alert("Authorization failed: " + (data.error || "Unknown Error"));
+        }
+      }
+    </script>
+  </body>
+</html>

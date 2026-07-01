@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>OAuth 2.0 Handshake Verification</title>
+    <style>
+      body {
+        font-family: system-ui, sans-serif;
+        margin: 30px;
+        background: #fafafa;
+        color: #333;
+      }
+      .card {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        border: 1px solid #e3e3e3;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        margin-bottom: 20px;
+      }
+      pre {
+        background: #1e1e1e;
+        color: #39da8a;
+        padding: 15px;
+        border-radius: 6px;
+        overflow-x: auto;
+        font-family: monospace;
+      }
+      .badge {
+        padding: 4px 10px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: bold;
+        text-transform: uppercase;
+        display: inline-block;
+        margin-bottom: 10px;
+      }
+      .bg-code {
+        background: #fef3c7;
+        color: #d97706;
+      }
+      .bg-token {
+        background: #dcfce7;
+        color: #15803d;
+      }
+      .bg-data {
+        background: #e0f2fe;
+        color: #0369a1;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>OAuth 2.0 Handshake Tracker</h1>
+    <p>
+      The provider redirected the browser back here. Let's inspect the
+      credentials intercepted at each step.
+    </p>
+
+    <div class="card">
+      <span class="badge bg-code">Intercepted from URL Query</span>
+      <h3>1. Authorization Code Received</h3>
+      <p>
+        This is a short-lived string. It cannot be used to read data directly;
+        it must be immediately traded for an access token.
+      </p>
+      <pre id="code-output">Extracting code from URL...</pre>
+    </div>
+
+    <div class="card">
+      <span class="badge bg-token">Exchanged via POST Request</span>
+      <h3>2. Access Token Response</h3>
+      <p>
+        The client application traded the temporary code for this token object.
+        The client will store this in memory or a database.
+      </p>
+      <pre id="token-output">Waiting to exchange code...</pre>
+    </div>
+
+    <div class="card">
+      <span class="badge bg-data">Resource Server Access Approved</span>
+      <h3>3. Revealed Profile &amp; Application Data</h3>
+      <p>
+        Using the access token above in the <code>Authorization: Bearer</code>
+        header, the client app pulled the authorized information:
+      </p>
+      <pre id="data-output">Waiting for valid token...</pre>
+    </div>
+
+    <script>
+      async function executeHandshake() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const code = urlParams.get("code");
+        const state = urlParams.get("state");
+
+        if (!code) {
+          document.getElementById("code-output").textContent =
+            "Error: No authorization code detected in the URL query string.";
+          return;
+        }
+
+        // Display Step 1 Data
+        document.getElementById("code-output").textContent = JSON.stringify(
+          {
+            extracted_code: code,
+            received_state: state,
+            explanation:
+              "This code proves the user successfully authenticated at the provider portal.",
+          },
+          null,
+          2,
+        );
+
+        // Prepare the payload to trade the code for an access token
+        const tokenPayload = new URLSearchParams({
+          grant_type: "authorization_code",
+          code: code,
+          client_id: "vanguard-app-123",
+          client_secret: "super-secret-key",
+          redirect_uri: "http://localhost:3005/callback.html", // Match server's allowed redirectURI exactly
+        });
+
+        try {
+          // Execute Step 2: Request the access token from port 3005
+          const tokenRes = await fetch("http://localhost:3005/oauth/token", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/x-www-form-urlencoded",
+            },
+            body: tokenPayload.toString(),
+          });
+          const tokenData = await tokenRes.json();
+          document.getElementById("token-output").textContent = JSON.stringify(
+            tokenData,
+            null,
+            2,
+          );
+
+          if (tokenData.access_token) {
+            // Execute Step 3: Hit the protected server resource route on 3005 using the token
+            const dataRes = await fetch("http://localhost:3005/tasks", {
+              headers: {
+                Authorization: `Bearer ${tokenData.access_token}`,
+              },
+            });
+            const secureData = await dataRes.json();
+            document.getElementById("data-output").textContent = JSON.stringify(
+              secureData,
+              null,
+              2,
+            );
+          }
+        } catch (err) {
+          document.getElementById("token-output").textContent =
+            `Handshake Error: ${err.message}`;
+        }
+      }
+
+      executeHandshake();
+    </script>
+  </body>
+</html>

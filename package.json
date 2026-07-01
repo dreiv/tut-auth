@@ -7,6 +7,7 @@
     "dev:2": "concurrently \"npm run dev:2:server\" \"npm run dev:2:client\"",
     "dev:3": "concurrently \"npm run dev:3:server\" \"npm run dev:3:client\"",
     "dev:4": "concurrently \"npm run dev:4:server\" \"npm run dev:4:client:vulnerable\" \"npm run dev:4:client:secure\" \"npm run dev:4:malicious\"",
+    "dev:5": "concurrently \"npm run dev:5:server\" \"npm run dev:5:client\"",
     "dev:1:server": "tsx watch 01-basic-auth/server.ts",
     "dev:1:client": "live-server 01-basic-auth --port=3000 --entry-file=client.html",
     "dev:2:server": "tsx watch 02-bearer-opaque/server.ts",
@@ -16,7 +17,9 @@
     "dev:4:server": "tsx watch 04-security/secure-server.ts",
     "dev:4:malicious": "tsx watch 04-security/malicious-server.ts",
     "dev:4:client:vulnerable": "live-server 04-security --port=3003 --entry-file=vulnerable-client.html",
-    "dev:4:client:secure": "live-server 04-security --port=3004 --entry-file=secure-client.html"
+    "dev:4:client:secure": "live-server 04-security --port=3004 --entry-file=secure-client.html",
+    "dev:5:server": "tsx watch 05-oauth-2/server.ts",
+    "dev:5:client": "live-server 05-oauth-2 --port=3005 --entry-file=client.html"
   },
   "devDependencies": {
     "@types/cookie-parser": "^1.4.10",
@@ -24,6 +27,7 @@
     "@types/express": "^5.0.6",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^25.6.2",
+    "@types/oauth2-server": "^3.0.18",
     "concurrently": "^9.2.1",
     "live-server": "^1.2.2",
     "tsx": "^4.21.0",
@@ -33,6 +37,7 @@
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.6",
     "express": "^5.2.1",
-    "jsonwebtoken": "^9.0.3"
+    "jsonwebtoken": "^9.0.3",
+    "oauth2-server": "^3.1.1"
   }
 }
