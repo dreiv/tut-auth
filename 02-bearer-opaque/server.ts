@@ -1,109 +1,115 @@
 import express, { Request, Response, NextFunction } from "express";
-import crypto from "crypto";
 import cors from "cors";
-
-interface Session {
-  userId: number;
-  username: string;
-  createdAt: number;
-  expiresAt: number;
-}
+import crypto from "crypto";
 
 interface AuthRequest extends Request {
   user?: {
-    userId: number;
     username: string;
   };
 }
 
+interface Session {
+  username: string;
+  createdAt: Date;
+  expiresAt: Date;
+}
+
 const app = express();
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 3002;
 
 app.use(cors()).use(express.json());
 
-// In-memory session storage (use actual DB/Redis in production)
-const sessions = new Map<string, Session>();
-
+// In-memory data stores
 const demoTasks = [
-  { id: 1, title: "My first task", completed: true },
-  { id: 2, title: "My second task", completed: false },
+  { id: 1, title: "Learn Opaque Tokens", completed: true },
+  { id: 2, title: "Understand DB lookup overhead", completed: false },
 ];
 
+// Memory Map simulating a central session store/database (e.g., Redis)
+const sessionStore = new Map<string, Session>();
+
+const SESSION_DURATION_MS = 5 * 60 * 1000; // 5 minutes
+
 /**
- * Bearer Token Authentication Middleware
- * Validates the token against our "database" (the Map)
+ * Middleware: Opaque Bearer Token Authentication
  */
-function bearerAuth(req: AuthRequest, res: Response, next: NextFunction) {
+function authenticate(req: AuthRequest, res: Response, next: NextFunction) {
   const authHeader = req.headers.authorization;
 
-  if (!authHeader?.startsWith("Bearer ")) {
-    return res.status(401).json({ error: "Missing or malformed token" });
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return res
+      .status(401)
+      .json({ error: "Missing or malformed authorization header" });
   }
 
   const token = authHeader.split(" ")[1];
-  const session = sessions.get(token);
 
-  // Validation Logic
+  if (!token) {
+    return res.status(401).json({ error: "Token not found in header" });
+  }
+
+  console.log(
+    `[db-lookup]: Checking token session store for: ${token.substring(0, 8)}...`,
+  );
+  const session = sessionStore.get(token);
+
   if (!session) {
-    console.log("[auth]: Invalid token lookup attempt");
-    return res.status(401).json({ error: "Invalid token" });
+    return res.status(401).json({ error: "Invalid token or expired session" });
   }
 
-  if (session.expiresAt < Date.now()) {
-    sessions.delete(token);
-    console.log("[auth]: Expired token removed");
-    return res.status(401).json({ error: "Token expired" });
+  if (new Date() > session.expiresAt) {
+    console.log(`[db-lookup]: Token expired. Cleaning up.`);
+    sessionStore.delete(token); // Active cleanup
+    return res.status(401).json({ error: "Token has expired" });
   }
 
-  console.log("Token valid, user:", session.username);
-  req.user = { userId: session.userId, username: session.username };
-  next();
+  req.user = { username: session.username };
+  return next();
 }
 
 // --- Routes ---
 
-app.get("/", (_, res) => res.send("Server running!"));
-
-app.post("/login", (req: Request, res: Response) => {
+app.post("/login", (req, res) => {
   const { username, password } = req.body;
 
-  // hardcoded for demo
   if (username === "admin" && password === "secret123") {
     const token = crypto.randomBytes(32).toString("hex");
 
-    sessions.set(token, {
-      userId: 1,
-      username: username,
-      createdAt: Date.now(),
-      expiresAt: Date.now() + 24 * 60 * 60 * 1000, // 24 hours
+    const now = new Date();
+    const expiresAt = new Date(now.getTime() + SESSION_DURATION_MS);
+
+    sessionStore.set(token, {
+      username,
+      createdAt: now,
+      expiresAt,
     });
 
-    console.log("Token generated and stored");
-    console.log("Current sessions:", sessions.size);
-
+    console.log(`[auth]: Created stateful session for ${username}`);
     return res.json({
       access_token: token,
       token_type: "Bearer",
-      expires_in: 86400,
+      expires_in: SESSION_DURATION_MS / 1000,
     });
   }
 
-  res.status(401).json({ error: "Invalid credentials" });
+  return res.status(401).json({ error: "Invalid credentials" });
 });
 
-app.get("/tasks", bearerAuth, (_, res: Response) => {
-  res.json(demoTasks);
+app.post("/logout", authenticate, (req: AuthRequest, res: Response) => {
+  const authHeader = req.headers.authorization!;
+  const token = authHeader.split(" ")[1]!;
+
+  sessionStore.delete(token);
+  console.log(`[auth]: ${req.user?.username} logged out. Token revoked.`);
+
+  res.json({ message: "Successfully logged out. Token is now invalid." });
 });
 
-app.post("/logout", bearerAuth, (req: AuthRequest, res: Response) => {
-  const token = req.headers.authorization?.split(" ")[1];
-
-  if (token) {
-    sessions.delete(token);
-    console.log(`[auth]: Session destroyed. Active sessions: ${sessions.size}`);
-  }
-
-  res.json({ message: "Logged out successfully" });
+app.get("/tasks", authenticate, (req: AuthRequest, res: Response) => {
+  res.json({
+    user: req.user?.username,
+    tasks: demoTasks,
+  });
 });
 
 app.listen(PORT, () =>
