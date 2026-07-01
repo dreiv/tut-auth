@@ -1,221 +1,281 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Basic Auth Demo Client</title>
-  <style>
-    @layer base {
-      :root {
-        --bg: #fafaf9;
-        --text: #44403c;
-        --text-h: #1c1917;
-        --border: #eaddd7;
-        --code-bg: #f5f5f4;
-        --accent: #f47121;
-        --accent-bg: rgba(244, 113, 33, 0.05);
-        --accent-border: rgba(244, 113, 33, 0.25);
-        --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.04);
-        --sans: 'Inter', system-ui, sans-serif;
-        --mono: ui-monospace, 'Cascadia Code', monospace;
-        color-scheme: light dark;
-        font-family: var(--sans);
-        font-size: 18px;
-        line-height: 1.6;
-        color: var(--text);
-        background-color: var(--bg);
-      }
-
-      @media (prefers-color-scheme: dark) {
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Basic Auth Demo Client</title>
+    <style>
+      @layer base {
         :root {
-          --bg: #1c1917;
-          --text: #a8a29e;
-          --text-h: #fafaf9;
-          --border: #44403c;
-          --code-bg: #292524;
-          --accent: #fb923c;
-          --accent-bg: rgba(251, 146, 60, 0.1);
+          --bg: #fafaf9;
+          --text: #44403c;
+          --text-h: #1c1917;
+          --border: #eaddd7;
+          --code-bg: #f5f5f4;
+          --accent: #f47121;
+          --accent-bg: rgba(244, 113, 33, 0.05);
+          --accent-border: rgba(244, 113, 33, 0.25);
+          --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.04);
+          --sans: "Inter", system-ui, sans-serif;
+          --mono: ui-monospace, "Cascadia Code", monospace;
+          color-scheme: light dark;
+          font-family: var(--sans);
+          font-size: 18px;
+          line-height: 1.6;
+          color: var(--text);
+          background-color: var(--bg);
+        }
+
+        @media (prefers-color-scheme: dark) {
+          :root {
+            --bg: #0c0a09;
+            --text: #d6d3d1;
+            --text-h: #f5f5f4;
+            --border: #2e2a28;
+            --code-bg: #1c1917;
+            --accent: #f47121;
+            --accent-bg: rgba(244, 113, 33, 0.05);
+            --accent-border: rgba(244, 113, 33, 0.15);
+          }
+        }
+
+        * {
+          box-sizing: border-box;
+          margin: 0;
+          padding: 0;
+        }
+
+        body {
+          padding: 2rem;
+          max-width: 800px;
+          margin: 0 auto;
+        }
+
+        h1 {
+          font-size: 2.25rem;
+          font-weight: 800;
+          color: var(--text-h);
+          margin-bottom: 0.5rem;
+          letter-spacing: -0.025em;
+        }
+
+        p {
+          margin-bottom: 1.5rem;
+          color: var(--text);
+        }
+
+        input,
+        button {
+          font-family: inherit;
+          font-size: 0.95rem;
+          padding: 0.6rem 1rem;
+          border-radius: 6px;
+          border: 1px solid var(--border);
+          background: transparent;
+          color: var(--text-h);
+          transition: all 0.2s;
+        }
+
+        input:focus {
+          outline: none;
+          border-color: var(--accent);
+        }
+
+        button {
+          background: var(--text-h);
+          color: var(--bg);
+          border: none;
+          font-weight: 600;
+          cursor: pointer;
+        }
+
+        button:hover {
+          opacity: 0.9;
+        }
+
+        button.secondary {
+          background: transparent;
+          border: 1px solid var(--border);
+          color: var(--text);
+        }
+
+        button.secondary:hover {
+          background: var(--code-bg);
+        }
+
+        pre {
+          background: var(--code-bg);
+          padding: 1rem;
+          border-radius: 8px;
+          border: 1px solid var(--border);
+          overflow-x: auto;
+          font-family: var(--mono);
+          font-size: 0.85rem;
+          margin-bottom: 1.5rem;
         }
       }
-    }
 
-    body {
-      margin: 0;
-      padding: 60px 20px;
-    }
+      @layer components {
+        .auth-container {
+          background: white;
+          padding: 2rem;
+          border-radius: 12px;
+          border: 1px solid var(--border);
+          box-shadow: var(--shadow);
+          margin-bottom: 2rem;
+        }
 
-    .container {
-      max-width: 800px;
-      margin: 0 auto;
-      background: var(--bg);
-      padding: 40px;
-      border-radius: 16px;
-      border: 1px solid var(--border);
-      box-shadow: var(--shadow);
-    }
+        @media (prefers-color-scheme: dark) {
+          .auth-container {
+            background: #141211;
+          }
+        }
 
-    .section {
-      margin-bottom: 32px;
-      padding: 28px;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      background: var(--accent-bg);
-    }
+        .form-group {
+          display: flex;
+          flex-direction: column;
+          gap: 0.5rem;
+          margin-bottom: 1rem;
+        }
 
-    h1 {
-      color: var(--text-h);
-      font-size: 36px;
-      margin: 0 0 12px;
-      letter-spacing: -0.025em;
-    }
+        .form-group label {
+          font-size: 0.85rem;
+          font-weight: 600;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+          color: var(--text);
+        }
 
-    h2 {
-      margin: 0 0 20px;
-      color: var(--text-h);
-      font-size: 13px;
-      text-transform: uppercase;
-      font-family: var(--mono);
-      letter-spacing: 0.1em;
-    }
+        .btn-group {
+          display: flex;
+          gap: 0.75rem;
+          margin-top: 1.5rem;
+          margin-bottom: 1.5rem;
+        }
 
-    input {
-      width: 100%;
-      padding: 12px 16px;
-      margin-bottom: 16px;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      background: var(--bg);
-      color: var(--text-h);
-      font-size: 15px;
-      box-sizing: border-box;
-    }
-
-    button {
-      font-family: var(--sans);
-      font-weight: 600;
-      background: var(--accent);
-      color: #fff;
-      border: none;
-      padding: 12px 24px;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: all 200ms;
-
-      &:hover {
-        filter: brightness(1.1);
+        .preview-label {
+          font-size: 0.8rem;
+          font-weight: 700;
+          text-transform: uppercase;
+          color: var(--accent);
+          margin-bottom: 0.5rem;
+        }
       }
+    </style>
+  </head>
 
-      &.secondary {
-        background: var(--code-bg);
-        color: var(--text-h);
-        border: 1px solid var(--border);
-      }
-    }
+  <body>
+    <h1>01. Basic Authentication</h1>
+    <p>Credentials are Base64 encoded and sent with every request.</p>
 
-    .response {
-      font-family: var(--mono);
-      font-size: 14px;
-      padding: 20px;
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      margin-top: 20px;
-      white-space: pre-wrap;
+    <div class="auth-container">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem">
+        <div class="form-group">
+          <label>Username</label>
+          <input
+            type="text"
+            id="username"
+            value="admin"
+            placeholder="Enter username"
+          />
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input
+            type="password"
+            id="password"
+            value="secret123"
+            placeholder="Enter password"
+          />
+        </div>
+      </div>
 
-      &.success {
-        border-left: 4px solid var(--accent);
-      }
+      <div class="btn-group">
+        <button id="btn-set">1. Set Credentials</button>
+        <button id="btn-test">2. Test Authentication</button>
+        <button id="btn-clear" class="secondary">Clear State</button>
+      </div>
 
-      &.error {
-        border-left: 4px solid #ef4444;
-      }
-    }
+      <div class="preview-label">Header Preview</div>
+      <pre id="header-preview">Authorization: None</pre>
 
-    .info {
-      color: var(--text);
-      font-size: 14px;
-      margin-top: 16px;
-      opacity: 0.8;
-    }
-  </style>
-</head>
-
-<body>
-  <div class="container">
-    <h1>Basic Auth Demo</h1>
-    <p style="margin-bottom: 40px;">Credentials are Base64 encoded and sent with every request.</p>
-
-    <!-- 1. Credentials Input -->
-    <div class="section">
-      <h2>1. Set Credentials</h2>
-      <input type="text" id="username" placeholder="Username" value="admin">
-      <input type="password" id="password" placeholder="Password" value="secret123">
-      <div class="info">These will be used for the Authorization header.</div>
+      <div class="preview-label">Server Response</div>
+      <pre id="response-output">
+Click "Test Authentication" to make a request...</pre
+      >
     </div>
 
-    <!-- 2. Protected Resource -->
-    <div class="section">
-      <h2>2. Test Authentication</h2>
-      <button onclick="fetchTasks()">Fetch Tasks (GET /tasks)</button>
-      <button class="secondary" onclick="clearLocalCredentials()">Clear State</button>
-      <div id="tasksResponse"></div>
-    </div>
+    <script>
+      const API_URL = "http://localhost:3001";
+      let authHeaderValue = null;
 
-    <div class="section">
-      <h2>Header Preview</h2>
-      <code id="headerPreview" style="font-size: 13px; color: var(--accent);">Authorization: None</code>
-    </div>
-  </div>
+      // DOM Elements
+      const usernameInput = document.getElementById("username");
+      const passwordInput = document.getElementById("password");
+      const headerPreview = document.getElementById("header-preview");
+      const responseOutput = document.getElementById("response-output");
 
-  <script>
-    const API_URL = 'http://localhost:3001';
+      function updateHeaderPreview() {
+        const username = usernameInput.value;
+        const password = passwordInput.value;
 
-    function getAuthHeader() {
-      const user = document.getElementById('username').value;
-      const pass = document.getElementById('password').value;
+        if (!username && !password) {
+          authHeaderValue = "Basic Og=="; // Base64 of ":"
+        } else {
+          // btoa() creates a Base64-encoded ASCII string from a "string" of binary data
+          const credentials = btoa(`${username}:${password}`);
+          authHeaderValue = `Basic ${credentials}`;
+        }
+        headerPreview.textContent = `Authorization: ${authHeaderValue}`;
+      }
 
-      // Basic Auth requires 'username:password' in Base64
-      const credentials = btoa(`${user}:${pass}`);
-      const headerValue = `Basic ${credentials}`;
+      // Event Listeners
+      document
+        .getElementById("btn-set")
+        .addEventListener("click", updateHeaderPreview);
 
-      document.getElementById('headerPreview').textContent = `Authorization: ${headerValue}`;
-      return headerValue;
-    }
+      document.getElementById("btn-clear").addEventListener("click", () => {
+        usernameInput.value = "";
+        passwordInput.value = "";
+        authHeaderValue = null;
+        headerPreview.textContent = "Authorization: None";
+        responseOutput.textContent = "State cleared.";
+      });
 
-    async function fetchTasks() {
-      const responseEl = document.getElementById('tasksResponse');
-      const authHeader = getAuthHeader();
+      document
+        .getElementById("btn-test")
+        .addEventListener("click", async () => {
+          // If user hasn't explicitly clicked "Set Credentials", calculate it now anyway
+          if (!authHeaderValue) {
+            updateHeaderPreview();
+          }
 
-      try {
-        const response = await fetch(`${API_URL}/tasks`, {
-          headers: { 'Authorization': authHeader }
+          responseOutput.textContent = "Sending request...";
+
+          try {
+            const headers = {};
+            if (authHeaderValue) {
+              headers["Authorization"] = authHeaderValue;
+            }
+
+            const res = await fetch(`${API_URL}/tasks`, {
+              method: "GET",
+              headers: headers,
+            });
+
+            const data = await res.json();
+            responseOutput.textContent = JSON.stringify(data, null, 2);
+          } catch (err) {
+            responseOutput.textContent = JSON.stringify(
+              { error: "Server unreachable. Ensure dev:1 is running." },
+              null,
+              2,
+            );
+          }
         });
 
-        const data = await response.json();
-
-        responseEl.className = 'response ' + (response.ok ? 'success' : 'error');
-        responseEl.textContent = JSON.stringify(data, null, 2);
-
-        // If server returns 401, the browser may trigger its own popup
-        // because of the WWW-Authenticate header.
-      } catch (error) {
-        responseEl.className = 'response error';
-        responseEl.textContent = JSON.stringify({ error: "Server unreachable. Ensure dev:1 is running." }, null, 2);
-      }
-    }
-
-    function clearLocalCredentials() {
-      document.getElementById('username').value = '';
-      document.getElementById('password').value = '';
-      document.getElementById('tasksResponse').textContent = '';
-      document.getElementById('tasksResponse').className = 'hidden';
-      document.getElementById('headerPreview').textContent = 'Authorization: None';
-
-      // Note: This does NOT clear the browser's internal Basic Auth cache.
-      // You must close the tab or use Incognito to truly "log out".
-    }
-  </script>
-</body>
-
+      // Initial preview setup
+      updateHeaderPreview();
+    </script>
+  </body>
 </html>
