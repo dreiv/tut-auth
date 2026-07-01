@@ -1,386 +1,70 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
+  <body>
+    <h1>03. JWT Authentication</h1>
 
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>JWT Demo Client</title>
-  <style>
-    @layer base {
-      :root {
-        --bg: #fafaf9;
-        --text: #44403c;
-        --text-h: #1c1917;
-        --border: #eaddd7;
-        --code-bg: #f5f5f4;
-        --accent: #f47121;
-        --accent-bg: rgba(244, 113, 33, 0.05);
-        --accent-border: rgba(244, 113, 33, 0.25);
-        --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.04);
-        --sans: 'Inter', system-ui, sans-serif;
-        --mono: ui-monospace, 'Cascadia Code', monospace;
-        color-scheme: light dark;
-        font-family: var(--sans);
-        font-size: 16px;
-        line-height: 1.5;
-        color: var(--text);
-        background-color: var(--bg);
-      }
+    <input type="text" id="username" value="admin" />
+    <input type="password" id="password" value="secret123" />
+    <button id="btn-login">1. Login & Get JWT</button>
 
-      @media (prefers-color-scheme: dark) {
-        :root {
-          --bg: #1c1917;
-          --text: #a8a29e;
-          --text-h: #fafaf9;
-          --border: #44403c;
-          --code-bg: #292524;
-          --accent: #fb923c;
-          --accent-bg: rgba(251, 146, 60, 0.1);
-        }
-      }
-    }
+    <button id="btn-test">2. Test with Token</button>
 
-    body {
-      margin: 0;
-      padding: 40px 20px;
-    }
+    <h3>Stored Token:</h3>
+    <pre id="token-view">None</pre>
 
-    .container {
-      max-width: 900px;
-      margin: 0 auto;
-      background: var(--bg);
-      padding: 40px;
-      border-radius: 16px;
-      border: 1px solid var(--border);
-      box-shadow: var(--shadow);
-    }
+    <h3>Server Response:</h3>
+    <pre id="response-view">No request sent yet.</pre>
 
-    h1 {
-      color: var(--text-h);
-      font-size: 32px;
-      margin: 0 0 8px;
-      letter-spacing: -0.025em;
-    }
+    <script>
+      const API_URL = "http://localhost:3003";
+      let jwtToken = null;
 
-    .subtitle {
-      color: var(--text);
-      margin-bottom: 40px;
-      opacity: 0.8;
-    }
+      document
+        .getElementById("btn-login")
+        .addEventListener("click", async () => {
+          const username = document.getElementById("username").value;
+          const password = document.getElementById("password").value;
 
-    .section {
-      margin-bottom: 24px;
-      padding: 24px;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      background: var(--bg);
-    }
+          const res = await fetch(`${API_URL}/login`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ username, password }),
+          });
 
-    .section.highlighted {
-      background: var(--accent-bg);
-      border-color: var(--accent-border);
-    }
+          const data = await res.json();
 
-    h2 {
-      margin: 0 0 16px;
-      color: var(--text-h);
-      font-size: 12px;
-      text-transform: uppercase;
-      font-family: var(--mono);
-      letter-spacing: 0.1em;
-    }
-
-    input,
-    textarea {
-      width: 100%;
-      padding: 12px;
-      margin-bottom: 12px;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      background: var(--bg);
-      color: var(--text-h);
-      font-size: 14px;
-      box-sizing: border-box;
-      font-family: var(--sans);
-    }
-
-    textarea {
-      font-family: var(--mono);
-      font-size: 12px;
-    }
-
-    .btn-group {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      margin-bottom: 12px;
-    }
-
-    button {
-      font-family: var(--sans);
-      font-weight: 600;
-      background: var(--accent);
-      color: #fff;
-      border: none;
-      padding: 10px 20px;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: all 200ms;
-      font-size: 14px;
-
-      &:hover {
-        filter: brightness(1.1);
-      }
-
-      &.secondary {
-        background: var(--code-bg);
-        color: var(--text-h);
-        border: 1px solid var(--border);
-      }
-
-      &.warning {
-        background: #f59e0b;
-      }
-
-      &.danger {
-        background: #ef4444;
-      }
-    }
-
-    .token-display {
-      background: var(--code-bg);
-      padding: 16px;
-      border-radius: 8px;
-      word-break: break-all;
-      font-family: var(--mono);
-      font-size: 12px;
-      border: 1px solid var(--border);
-      margin: 12px 0;
-    }
-
-    .jwt-parts {
-      font-family: var(--mono);
-      font-size: 12px;
-      padding: 16px;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      background: var(--bg);
-
-      & .header {
-        color: #ec4899;
-      }
-
-      & .payload {
-        color: #8b5cf6;
-      }
-
-      & .signature {
-        color: #10b981;
-      }
-    }
-
-    .response {
-      font-family: var(--mono);
-      font-size: 13px;
-      padding: 16px;
-      background: var(--code-bg);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      margin-top: 12px;
-      white-space: pre-wrap;
-
-      &.success {
-        border-left: 4px solid var(--accent);
-      }
-
-      &.error {
-        border-left: 4px solid #ef4444;
-      }
-    }
-
-    .info {
-      font-size: 13px;
-      margin-top: 8px;
-      opacity: 0.7;
-    }
-
-    .mark {
-      background: #fef3c7;
-      color: #92400e;
-      padding: 2px 4px;
-      border-radius: 4px;
-      font-weight: bold;
-    }
-  </style>
-</head>
-
-<body>
-  <div class="container">
-    <h1>JWT Auth Lab</h1>
-    <p class="subtitle">Deep dive into stateless tokens and signature verification.</p>
-
-    <!-- 1. Login -->
-    <div class="section highlighted">
-      <h2>1. Authenticate</h2>
-      <input type="text" id="username" placeholder="Username" value="admin">
-      <input type="password" id="password" placeholder="Password" value="secret123">
-      <button onclick="login()">Login</button>
-      <div id="loginResponse"></div>
-    </div>
-
-    <!-- Token Inspector -->
-    <div class="section">
-      <h2>Current Token (Client State)</h2>
-      <div class="token-display" id="tokenDisplay">No token stored.</div>
-      <div class="btn-group">
-        <button class="secondary" onclick="copyToken()">Copy Raw</button>
-        <button class="secondary" onclick="openJwtIo()">Inspect on JWT.io</button>
-      </div>
-      <div id="decodedJwt"></div>
-    </div>
-
-    <!-- 2. Protected Data -->
-    <div class="section">
-      <h2>2. Resource Access</h2>
-      <div class="btn-group">
-        <button onclick="getTasks()">Fetch Tasks</button>
-        <button class="secondary" onclick="getTasksMultiple()">Rapid Test (3x)</button>
-      </div>
-      <div class="info">Server checks <span class="mark">signature only</span>—no DB lookup performed.</div>
-      <div id="tasksResponse"></div>
-    </div>
-
-    <!-- 3. Security: Tampering -->
-    <div class="section">
-      <h2>3. Security: Signature Check</h2>
-      <div class="btn-group">
-        <button class="warning" onclick="tamperToken()">Modify Payload (Set Admin)</button>
-        <button class="warning" onclick="testTamperedToken()">Send Tampered Token</button>
-      </div>
-      <textarea id="tamperedToken" rows="3" placeholder="Tampered token will appear here..."></textarea>
-      <div id="tamperResponse"></div>
-    </div>
-
-    <!-- 4. The Weakness: Revocation -->
-    <div class="section">
-      <h2>4. The Trade-off: Revocation</h2>
-      <div class="btn-group">
-        <button class="danger" onclick="logout()">Logout (Stateless)</button>
-        <button class="secondary" onclick="testAfterLogout()">Re-use "Dead" Token</button>
-      </div>
-      <div class="info">Even after logout, the token remains valid until <span class="mark">exp</span> time hits.</div>
-      <div id="revocationResponse"></div>
-    </div>
-  </div>
-
-  <script>
-    const API_URL = 'http://localhost:3003';
-    let currentToken = null;
-
-    function showResponse(elementId, data, isError = false) {
-      const element = document.getElementById(elementId);
-      element.className = 'response ' + (isError ? 'error' : 'success');
-      element.textContent = JSON.stringify(data, null, 2);
-    }
-
-    function decodeJwt(token) {
-      try {
-        const parts = token.split('.');
-        const header = JSON.parse(atob(parts[0]));
-        const payload = JSON.parse(atob(parts[1]));
-        const decodedDiv = document.getElementById('decodedJwt');
-        decodedDiv.className = 'jwt-parts';
-        decodedDiv.innerHTML = `
-          <div><span class="header">Header:</span> ${JSON.stringify(header)}</div>
-          <div style="margin-top:8px"><span class="payload">Payload:</span> ${JSON.stringify(payload)}</div>
-          <div style="margin-top:8px"><span class="signature">Sig:</span> ${parts[2].substring(0, 24)}...</div>
-        `;
-      } catch (e) { console.error('Decode failed', e); }
-    }
-
-    async function login() {
-      const username = document.getElementById('username').value;
-      const password = document.getElementById('password').value;
-      try {
-        const res = await fetch(`${API_URL}/login`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ username, password })
+          if (res.ok) {
+            jwtToken = data.access_token;
+            document.getElementById("token-view").textContent = jwtToken;
+            document.getElementById("response-view").textContent =
+              "Logged in successfully!";
+          } else {
+            document.getElementById("response-view").textContent = data.error;
+          }
         });
-        const data = await res.json();
-        if (res.ok) {
-          currentToken = data.access_token;
-          document.getElementById('tokenDisplay').textContent = currentToken;
-          decodeJwt(currentToken);
-        }
-        showResponse('loginResponse', data, !res.ok);
-      } catch (err) { showResponse('loginResponse', { error: err.message }, true); }
-    }
 
-    async function getTasks() {
-      if (!currentToken) return alert('Login first!');
-      try {
-        const res = await fetch(`${API_URL}/tasks`, {
-          headers: { 'Authorization': `Bearer ${currentToken}` }
+      document
+        .getElementById("btn-test")
+        .addEventListener("click", async () => {
+          if (!jwtToken) {
+            alert("Please login first!");
+            return;
+          }
+
+          const res = await fetch(`${API_URL}/tasks`, {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${jwtToken}`,
+            },
+          });
+
+          const data = await res.json();
+          document.getElementById("response-view").textContent = JSON.stringify(
+            data,
+            null,
+            2,
+          );
         });
-        showResponse('tasksResponse', await res.json(), !res.ok);
-      } catch (err) { showResponse('tasksResponse', { error: err.message }, true); }
-    }
-
-    async function getTasksMultiple() {
-      showResponse('tasksResponse', { message: 'Firing 3 stateless requests...' });
-      for (let i = 0; i < 3; i++) {
-        await getTasks();
-        await new Promise(r => setTimeout(r, 150));
-      }
-    }
-
-    function tamperToken() {
-      if (!currentToken) return alert('Login first!');
-      const parts = currentToken.split('.');
-      const payload = JSON.parse(atob(parts[1]));
-      payload.role = 'super-admin'; // Attempted privilege escalation
-      const tamperedPayload = btoa(JSON.stringify(payload)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
-      const tampered = `${parts[0]}.${tamperedPayload}.${parts[2]}`;
-      document.getElementById('tamperedToken').value = tampered;
-      showResponse('tamperResponse', { message: 'Payload changed to admin, but signature is now invalid.' });
-    }
-
-    async function testTamperedToken() {
-      const token = document.getElementById('tamperedToken').value;
-      try {
-        const res = await fetch(`${API_URL}/tasks`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        showResponse('tamperResponse', await res.json(), !res.ok);
-      } catch (err) { showResponse('tamperResponse', { error: err.message }, true); }
-    }
-
-    async function logout() {
-      if (!currentToken) return;
-      try {
-        const res = await fetch(`${API_URL}/logout`, {
-          method: 'POST',
-          headers: { 'Authorization': `Bearer ${currentToken}` }
-        });
-        showResponse('revocationResponse', await res.json());
-      } catch (err) { showResponse('revocationResponse', { error: err.message }, true); }
-    }
-
-    async function testAfterLogout() {
-      showResponse('revocationResponse', { message: 'Using "logged out" token. This will likely still work!' });
-      setTimeout(getTasks, 500);
-    }
-
-    function copyToken() {
-      navigator.clipboard.writeText(currentToken);
-      alert('Token copied!');
-    }
-
-    function openJwtIo() {
-      window.open('https://jwt.io/#debugger-io?token=' + currentToken, '_blank');
-    }
-  </script>
-</body>
-
+    </script>
+  </body>
 </html>
